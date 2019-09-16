@@ -65,11 +65,11 @@ class _ContentPanel extends React.PureComponent {
           </Tabs>);
     }
     
-    onChange(activeKey) {
+    onChange = (activeKey) => {
         this.setState({ activeKey });
     }
     
-    onEdit(targetKey, action)  {
+    onEdit = (targetKey, action) => {
         console.log("targetKey", targetKey);
         console.log("action", action);
         this[action](targetKey);
@@ -83,7 +83,7 @@ class _ContentPanel extends React.PureComponent {
         // this.setState({ panes, activeKey });
     }
     
-    remove (targetKey) {
+    remove = (targetKey) => {
         let { activeKey } = this.state;
         let lastIndex;
         this.state.panes.forEach((pane, i) => {
@@ -132,14 +132,14 @@ class _ContentPanel extends React.PureComponent {
       }
     }
 
-    findDoc (key) {
+    findDoc = (key) => {
         const {documents} = this.props;
         if (isEmptyArray(documents)) return undefined;
         return this.findDocOfChildren(documents, key) ;
         
     }
 
-    findDocOfChildren(documents, key) {
+    findDocOfChildren = (documents, key) => {
         for (let d of documents) {
             if (d.key === key) {
                 return d;
