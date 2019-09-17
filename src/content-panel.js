@@ -36,7 +36,7 @@ class _ContentPanel extends React.PureComponent {
         }
       }
     }
-
+    
     componentDidUpdate() {
      
       if (!this.loaded && !isEmptyArray(this.props.documents)) {
@@ -70,8 +70,8 @@ class _ContentPanel extends React.PureComponent {
     }
     
     onEdit = (targetKey, action) => {
-        console.log("targetKey", targetKey);
-        console.log("action", action);
+        // console.log("targetKey", targetKey);
+        // console.log("action", action);
         this[action](targetKey);
     }
 
@@ -85,20 +85,27 @@ class _ContentPanel extends React.PureComponent {
     
     remove = (targetKey) => {
         let { activeKey } = this.state;
-        let lastIndex;
+        let lastIndex = 0;
         this.state.panes.forEach((pane, i) => {
           if (pane.key === targetKey) {
             lastIndex = i - 1;
           }
         });
+       
         const panes = this.state.panes.filter(pane => pane.key !== targetKey);
-        if (panes.length && activeKey === targetKey) {
-          if (lastIndex >= 0) {
-            activeKey = panes[lastIndex].key;
+        const closeCurrent = activeKey === targetKey
+        if (closeCurrent) {
+          if (panes.length) {
+            if (0 <= lastIndex && lastIndex < panes.length) {
+              activeKey = panes[lastIndex].key;
+            } else {
+              activeKey = panes[0].key;
+            }
           } else {
-            activeKey = panes[0].key;
+            activeKey = undefined;
           }
-        }
+        } 
+        
         this.setState({ panes, activeKey });
       }
 
@@ -110,6 +117,7 @@ class _ContentPanel extends React.PureComponent {
             payload
       } = event;
       const { item, key, keyPath, domEvent } = payload;
+      // console.log("call handleOpenDocEvent", key)
       this.openDoc(key);
     }
 
