@@ -78,16 +78,20 @@ class _Menus extends React.Component{
     }
 
     createMenu(m) {
-      if (m.iconType) {
-        return (<Menu.Item key={m.key}>
-          <Icon type={m.iconType} />
-          <span title={m.title}>{m.title}</span>
-        </Menu.Item>);
-      } else {
-        return (<Menu.Item key={m.key}>
-          <span title={m.title}>{m.title}</span>
-        </Menu.Item>);
-      }
+        if (isEmptyArray(m.children)) {
+            if (m.iconType) {
+                return (<Menu.Item key={m.key}>
+                  <Icon type={m.iconType} />
+                  <span title={m.title}>{m.title}</span>
+                </Menu.Item>);
+              } else {
+                return (<Menu.Item key={m.key}>
+                  <span title={m.title}>{m.title}</span>
+                </Menu.Item>);
+              }
+        } else {
+            return  this.createMenuChildren(m)
+        }
     }
 
     createMenuChildren(m) {
