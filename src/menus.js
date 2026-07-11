@@ -1,139 +1,128 @@
-import React from 'react';
-import { Menu, Icon } from 'antd';
-import {isEmptyArray} from './util/utils';
+import { isEmptyArray } from './util/utils';
 import customEvent from "./util/custom-event";
-const { SubMenu } = Menu;
 
-class _Menus extends React.Component{
-    // menus = [
-    //   {
-    //     title: "Option 1",
-    //     iconType: "pie-chart",
-    //     key: "1",
-    //     children:[],
-    //   },
-    //   {
-    //     title: "Option 2",
-    //     iconType: "desktop",
-    //     key: "2",
-    //     children:[],
-    //   },
-    //   {
-    //     title: "User",
-    //     iconType: "user",
-    //     key: "sub1",
-    //     children:[
-    //       {
-    //         title: "user 1",
-    //         key: "3",
-    //       },{
-    //         title: "user 2",
-    //         key: "4",
-    //       },{
-    //         title: "user 3",
-    //         key: "5",
-    //       },
-    //     ],
-    //   },
-    //   {
-    //     title: "team",
-    //     iconType: "team",
-    //     key: "sub2",
-    //     children:[{
-    //       title: "team 1",
-    //       key: "6",
-    //     },{
-    //       title: "team 2",
-    //       key: "7",
-    //     },],
-    //   },
-    //   {
-    //     title: "File",
-    //     iconType: "file",
-    //     key: "8",
-    //   },
-      
-    // ];
-    constructor(props) {
-        super(props);
-        this.state = {menus: []};
-    }
-   
-    createMenus() {
-      // const {menus} = this.state;
-            const menus = this.props.documents;
-      //console.log("menus: ", menus);
-      if (!menus) {
-        return "";
-      }
-      return menus.map(m => {
-        if (isEmptyArray(m.children)) {
-          // leaf
-          return this.createMenu(m);
-        } else {
-          // branch
-          return this.createMenuChildren(m);
-        }
-      });
-    }
+class Menus {
+  constructor(options) {
+    this.documents = options.documents || [];
+    this.element = null;
+    this.init();
+  }
 
-    createMenu(m) {
-        if (isEmptyArray(m.children)) {
-            if (m.iconType) {
-                return (<Menu.Item key={m.key}>
-                  <Icon type={m.iconType} />
-                  <span title={m.title}>{m.title}</span>
-                </Menu.Item>);
-              } else {
-                return (<Menu.Item key={m.key}>
-                  <span title={m.title}>{m.title}</span>
-                </Menu.Item>);
-              }
-        } else {
-            return  this.createMenuChildren(m)
-        }
-    }
+  init() {
+    this.element = document.createElement('ul');
+    this.element.className = 'asu-docs-menu';
+    this.renderMenus(this.documents, this.element);
+  }
 
-    createMenuChildren(m) {
-      const children = m.children.map(m => this.createMenu(m));
-      if (m.iconType) {
-        return (
-          <SubMenu
-              key={m.key}
-              title={
-                <span>
-                  <Icon type={m.iconType}/>
-                  <span>{m.title}</span>
-                </span>
-              }
-          >
-            {children}
-          </SubMenu>);
+  getIcon(iconType) {
+    if (!iconType) return '📄';
+    const icons = {
+      'pie-chart': '📊',
+      'desktop': '🖥️',
+      'user': '👤',
+      'team': '👥',
+      'file': '📄',
+      'folder': '📁',
+      'setting': '⚙️',
+      'book': '📖',
+      'link': '🔗'
+    };
+    return icons[iconType.toLowerCase()] || '📄';
+  }
+
+  renderMenus(items, parentElement) {
+    if (!items) return;
+
+    items.forEach(item => {
+      const li = document.createElement('li');
+      li.className = 'asu-docs-menu-item-wrap';
+
+      const titleEl = document.createElement('a');
+      titleEl.className = 'asu-docs-menu-title';
+      titleEl.href = 'javascript:void(0);';
+
+      // Icon
+      const iconEl = document.createElement('span');
+      iconEl.className = 'asu-docs-menu-icon';
+      iconEl.textContent = this.getIcon(item.iconType);
+      titleEl.appendChild(iconEl);
+
+      // Label
+      const labelEl = document.createElement('span');
+      labelEl.className = 'asu-docs-menu-label';
+      labelEl.textContent = item.title;
+      labelEl.title = item.title;
+      titleEl.appendChild(labelEl);
+
+      const hasChildren = !isEmptyArray(item.children);
+
+      if (hasChildren) {
+        li.className += ' asu-docs-submenu';
+        titleEl.setAttribute('data-key', item.key);
+        
+        // Arrow
+        const arrowEl = document.createElement('span');
+        arrowEl.className = 'asu-docs-submenu-arrow';
+        arrowEl.textContent = '▶';
+        titleEl.appendChild(arrowEl);
+
+        li.appendChild(titleEl);
+
+        const subUl = document.createElement('ul');
+        subUl.className = 'asu-docs-submenu-children';
+        this.renderMenus(item.children, subUl);
+        li.appendChild(subUl);
+
+        titleEl.addEventListener('click', (e) => {
+          e.preventDefault();
+          li.classList.toggle('open');
+        });
       } else {
-        return (
-          <SubMenu
-              key={m.key}
-              title={<span>{m.title}</span>}
-          >
-            {children}
-          </SubMenu>);
+        titleEl.setAttribute('data-key', item.key);
+        li.appendChild(titleEl);
+
+        titleEl.addEventListener('click', (e) => {
+          e.preventDefault();
+          
+          // Clear active class from all other menu titles
+          const allActive = this.element.querySelectorAll('.asu-docs-menu-title.active');
+          allActive.forEach(el => el.classList.remove('active'));
+          titleEl.classList.add('active');
+
+          this.handleClick(item, e);
+        });
+      }
+
+      parentElement.appendChild(li);
+    });
+  }
+
+  handleClick(item, domEvent) {
+    customEvent.fire("menu-doc-item-click", {
+      item: item,
+      key: item.key,
+      domEvent: domEvent
+    });
+  }
+
+  // Helper method to set a menu item active externally
+  setActiveItem(key) {
+    const allTitles = this.element.querySelectorAll('.asu-docs-menu-title');
+    allTitles.forEach(titleEl => {
+      titleEl.classList.remove('active');
+    });
+
+    const targetEl = this.element.querySelector(`.asu-docs-menu-title[data-key="${key}"]`);
+    if (targetEl) {
+      targetEl.classList.add('active');
+      // Also expand parent submenus if collapsed
+      let parent = targetEl.closest('.asu-docs-submenu');
+      while (parent) {
+        parent.classList.add('open');
+        parent = parent.parentElement.closest('.asu-docs-submenu');
       }
     }
-      /*点击 MenuItem 调用此函数*/
-    handleClick({ item, key, keyPath, domEvent }) {
-      customEvent.fire("menu-doc-item-click", { item, key, keyPath, domEvent });
-    }
-
-    render() {
-      return (<Menu
-                defaultSelectedKeys={['1']} 
-                onClick={this.handleClick}
-                mode="inline">
-              {this.createMenus()}
-            </Menu>
-      );
-    }
-    
+  }
 }
 
-export default _Menus;
+export default Menus;

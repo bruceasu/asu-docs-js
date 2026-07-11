@@ -1,0 +1,31 @@
+[
+  {
+    "title": "Getting Started",
+    "key": "getting-started",
+    "iconType": "book",
+    "path": "getting-started.html"
+  },
+  {
+    "title": "UI Components",
+    "key": "ui-components",
+    "iconType": "desktop",
+    "children": [
+      {
+        "title": "Buttons & Actions",
+        "key": "buttons",
+        "path": "buttons.html"
+      },
+      {
+        "title": "Cards & Panels",
+        "key": "cards",
+        "path": "cards.html"
+      }
+    ]
+  },
+  {
+    "title": "Settings & Config",
+    "key": "settings",
+    "iconType": "setting",
+    "path": "settings.html"
+  }
+]
